@@ -1,0 +1,212 @@
+{
+	"info": {
+		"_postman_id": "efd11f72-73ca-4f75-ac8b-62bfffa155f5",
+		"name": "FIB TASK",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "21482109"
+	},
+	"item": [
+		{
+			"name": "Get All Current Balances",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "FIB-X-AUTH",
+						"value": "f9Uie8nNf112hx8s",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "localhost:8080/api/v1/cash-balance",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"v1",
+						"cash-balance"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Withdrawal - 100 BGN",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "FIB-X-AUTH",
+						"value": "f9Uie8nNf112hx8s",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"cashier\" : \"LINDA\",\n    \"operationType\" : \"WITHDRAWAL\",\n    \"currency\" : \"BGN\",\n    \"amount\" : 100,\n    \"notes\" : [\n        {\n            \"value\" : 10,\n            \"amount\": 5\n        },\n        {\n            \"value\" : 50,\n            \"amount\": 1\n        }\n    ]\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "localhost:8080/api/v1/cash-operation",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"v1",
+						"cash-operation"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Deposit - 600 BGN",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "FIB-X-AUTH",
+						"value": "f9Uie8nNf112hx8s",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"cashier\" : \"LINDA\",\n    \"operationType\" : \"DEPOSIT\",\n    \"currency\" : \"BGN\",\n    \"amount\" : 600,\n    \"notes\" : [\n        {\n            \"value\" : 10,\n            \"amount\": 10\n        },\n        {\n            \"value\" : 50,\n            \"amount\": 10\n        }\n    ]\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "localhost:8080/api/v1/cash-operation",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"v1",
+						"cash-operation"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Withdrawal - 500 EUR",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "FIB-X-AUTH",
+						"value": "f9Uie8nNf112hx8s",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"cashier\" : \"LINDA\",\n    \"operationType\" : \"WITHDRAWAL\",\n    \"currency\" : \"EUR\",\n    \"amount\" : 500,\n    \"notes\" : [\n        {\n            \"value\" : 50,\n            \"amount\": 10\n        }\n    ]\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "localhost:8080/api/v1/cash-operation",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"v1",
+						"cash-operation"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Deposit - 200 EUR",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "FIB-X-AUTH",
+						"value": "f9Uie8nNf112hx8s",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"cashier\" : \"LINDA\",\n    \"operationType\" : \"DEPOSIT\",\n    \"currency\" : \"EUR\",\n    \"amount\" : 200,\n    \"notes\" : [\n        {\n            \"value\" : 20,\n            \"amount\": 5\n        },\n        {\n            \"value\" : 50,\n            \"amount\": 2\n        }\n    ]\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "localhost:8080/api/v1/cash-operation",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"v1",
+						"cash-operation"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Linda Operation History",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "FIB-X-AUTH",
+						"value": "f9Uie8nNf112hx8s",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "localhost:8080/api/v1/cash-balance?cashier=LINDA&dateFrom=2025-02-04T16:11:01.193113Z",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"v1",
+						"cash-balance"
+					],
+					"query": [
+						{
+							"key": "cashier",
+							"value": "LINDA"
+						},
+						{
+							"key": "dateFrom",
+							"value": "2025-02-04T16:11:01.193113Z"
+						}
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
