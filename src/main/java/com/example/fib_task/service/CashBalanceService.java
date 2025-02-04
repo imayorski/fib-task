@@ -16,6 +16,7 @@ import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import reactor.core.publisher.SynchronousSink;
 
 @Service
 @AllArgsConstructor
@@ -39,7 +40,7 @@ public class CashBalanceService {
 
   public Mono<Void> processCashOperation(final CashOperation cashOperation) {
     return balanceRepository.getLatestBalance(Optional.of(cashOperation.cashier()))
-        .flatMap(balance -> validateAvailability(balance, cashOperation))
+        .<Balance>handle((balance, sink) -> validateAvailability(balance, sink, cashOperation))
         .map(balance -> prepareNewBalance(balance, cashOperation))
         .flatMap(balanceRepository::saveBalance)
         .then(transactionRepository.saveTransaction(createTransaction(cashOperation)));
@@ -52,48 +53,48 @@ public class CashBalanceService {
         cashOperation.operationType(),
         cashOperation.amount());
   }
-
-  private Mono<Balance> validateAvailability(final Balance balance,
+  private void validateAvailability(final Balance balance,
+      final SynchronousSink<Balance> sink,
       final CashOperation cashOperation) {
     if (CashOperationType.WITHDRAWAL.equals(cashOperation.operationType())) {
-      if (cashOperation.amount() > balance.balances().get(cashOperation.currency())) {
-        return Mono.error(new InsufficientBalanceException());
+      if (!cashierHasEnoughBalance(balance, cashOperation)) {
+        sink.error(new InsufficientBalanceException());
+        return;
       }
-      var anyNoteInsufficient =
-          cashOperation.notes().stream()
-              .map(n -> balance.notes().get(new Note(cashOperation.currency(),n.value())) - n.amount())
-              .filter(i -> i < 0).findFirst();
 
-      if (anyNoteInsufficient.isPresent()) {
-        return Mono.error(new InsufficientNotesException());
+      if (!cashierHasEnoughNotes(balance, cashOperation)) {
+        sink.error(new InsufficientNotesException());
+        return;
       }
     }
+    sink.next(balance);
+  }
 
-    return Mono.just(balance);
+  private boolean cashierHasEnoughNotes(final Balance balance,
+      final CashOperation cashOperation) {
+    return cashOperation.notes().stream()
+            .map(n -> n.amount() - balance.notes().get(new Note(cashOperation.currency(), n.value())))
+            .anyMatch(i -> i < 0);
+  }
+
+  private boolean cashierHasEnoughBalance(final Balance balance,
+      final CashOperation cashOperation) {
+    return cashOperation.amount() < balance.balances().get(cashOperation.currency());
   }
 
   private Balance prepareNewBalance(final Balance balance,
       final CashOperation cashOperation) {
     final var updatedBalances = new HashMap<>(balance.balances());
     final var updatedNotes = new HashMap<>(balance.notes());
+    final var factor = CashOperationType.DEPOSIT.equals(cashOperation.operationType()) ? 1 : -1;
 
-    if (CashOperationType.DEPOSIT.equals(cashOperation.operationType())) {
-      cashOperation.notes().stream().forEach(note -> {
-        final var n = new Note(cashOperation.currency(), note.value());
-        updatedNotes.put(n, updatedNotes.getOrDefault(n, 0) + note.amount());
-      });
-      updatedBalances.put(cashOperation.currency(),
-          updatedBalances.getOrDefault(cashOperation.currency(), 0) +
-              cashOperation.amount());
-    } else if (CashOperationType.WITHDRAWAL.equals(cashOperation.operationType())) {
-      cashOperation.notes().stream().forEach(note -> {
-        final var n = new Note(cashOperation.currency(), note.value());
-        updatedNotes.put(n, updatedNotes.getOrDefault(n, 0) - note.amount());
-      });
-      updatedBalances.put(cashOperation.currency(),
-          updatedBalances.getOrDefault(cashOperation.currency(), 0) -
-              cashOperation.amount());
-    }
+    cashOperation.notes().forEach(note -> {
+      final var n = new Note(cashOperation.currency(), note.value());
+      updatedNotes.put(n, updatedNotes.getOrDefault(n, 0) + factor * note.amount());
+    });
+
+    updatedBalances.put(cashOperation.currency(),
+        updatedBalances.getOrDefault(cashOperation.currency(), 0) + factor * cashOperation.amount());
 
     return new Balance(balance.name(), Instant.now(), updatedBalances, updatedNotes);
   }
